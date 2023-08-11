@@ -1,5 +1,6 @@
 import { ChildProcess, spawn } from 'child_process';
 import { TspClient } from 'tsp-typescript-client/lib/protocol/tsp-client';
+import treeKill from 'tree-kill';
 import { myTreeKill } from "/home/eedbhu/git/vscode-trace-server/src/my-tree-kill"
 import * as vscode from 'vscode';
 
@@ -55,7 +56,7 @@ export class TraceServer {
                 async progress => {
                     progress.report({ message: 'stopping...' });
                     const message = prefix + ' stopping' + suffix + ' Resetting.';
-                    myTreeKill(pid, (error: Error) => {
+                    treeKill(pid, error => {
                         if (error) {
                             console.log('hallo: ' + error.message);
                             this.showErrorDetailed(message, error);
@@ -71,6 +72,21 @@ export class TraceServer {
         }
         await context?.workspaceState.update(key, none);
         this.server = undefined;
+    }
+
+    async shutdown(log: (el : string) => void) {
+        const pid = this.server ? this.server.pid : undefined;
+        if (pid === none) {
+            return;
+        }
+        if (pid) {
+            log(pid.toString());
+            log('bla1');
+            await myTreeKill(log, pid);
+            log('bla2');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            log('bla3');
+        }
     }
 
     async startIfStopped(context: vscode.ExtensionContext | undefined) {
