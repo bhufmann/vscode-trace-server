@@ -7,7 +7,7 @@ const server = new TraceServer();
 const extensionId = 'vscode-trace-server';
 const stopOrReset = extensionId + '.stop-or-reset';
 const startIfStopped = extensionId + '.start-if-stopped';
-const logLocation = path.join('/', 'home/', 'bernd/', 'log.txt');
+const logLocation = path.join('/', 'home/', 'eedbhu/', 'log.txt');
 
 let activation: vscode.ExtensionContext;
 
