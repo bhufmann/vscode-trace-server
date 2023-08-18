@@ -7,7 +7,7 @@ const server = new TraceServer();
 const extensionId = 'vscode-trace-server';
 const stopOrReset = extensionId + '.stop-or-reset';
 const startIfStopped = extensionId + '.start-if-stopped';
-const logLocation = path.join('/', 'home/', 'eedbhu/', 'log.txt');
+const logLocation = path.join('/', 'home/', 'bernd/', 'log.txt');
 
 let activation: vscode.ExtensionContext;
 
@@ -20,20 +20,20 @@ export function activate(context: vscode.ExtensionContext) {
 
 export async function deactivate() {
     maybeLogLine(`shutdown started`);
-    await server.shutdown(maybeLogLine);
+    await server.stopOrReset(maybeLogLine, undefined);
     maybeLogLine(`shutdown finished`);
 }
 
 function registerStopOrReset(context: vscode.ExtensionContext | undefined): vscode.Disposable {
     return vscode.commands.registerCommand(stopOrReset, async () => {
-        await server.stopOrReset(context);
+        await server.stopOrReset(maybeLogLine, context);
     });
 }
 export const registerStopOrReset_test = registerStopOrReset;
 
 function registerStartIfStopped(context: vscode.ExtensionContext | undefined): vscode.Disposable {
     return vscode.commands.registerCommand(startIfStopped, async () => {
-        await server.startIfStopped(context);
+        await server.startIfStopped(maybeLogLine, context);
     });
 }
 

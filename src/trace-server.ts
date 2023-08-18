@@ -31,18 +31,24 @@ export class TraceServer {
         await this.waitFor(context);
     }
 
-    async stopOrReset(context: vscode.ExtensionContext | undefined) {
+    async stopOrReset(log: (el : string) => void, context: vscode.ExtensionContext | undefined) {
         const pid: number | undefined = context?.workspaceState.get(key);
         const not = prefix + ' not stopped as none running or owned by us.';
-        if (pid === none) {
+        log('test1');
+        if (!pid) {
+            log('test2');
             vscode.window.showWarningMessage(not);
             return;
         }
-        if (pid && (await this.isUp())) {
+        log('test3');
+        if (pid) {
+            log('test4');
             let id: NodeJS.Timeout;
             // recovering from workspaceState => no this.server set
             if (this.server) {
+                log('test5');
                 this.server.once('exit', () => {
+                    log('test6');
                     this.showStatus(false);
                     clearTimeout(id);
                 });
@@ -54,24 +60,33 @@ export class TraceServer {
                     cancellable: false
                 },
                 async progress => {
+                    log('test7');
                     progress.report({ message: 'stopping...' });
                     const message = prefix + ' stopping' + suffix + ' Resetting.';
                     treeKill(pid, error => {
                         if (error) {
+                            log('test8');
                             console.log('hallo: ' + error.message);
                             this.showErrorDetailed(message, error);
                         } else {
+                            log('test9');
                             console.log('here: ' + message);
                             id = setTimeout(() => this.showError(message), millis);
                         }
                     });
+                    log('test10');
                 }
             );
         } else {
+            log('test11');
             vscode.window.showWarningMessage(not);
         }
+        log('test12');
         await context?.workspaceState.update(key, none);
         this.server = undefined;
+        log('test13');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        log('test14');
     }
 
     async shutdown(log: (el : string) => void) {
@@ -89,20 +104,27 @@ export class TraceServer {
         }
     }
 
-    async startIfStopped(context: vscode.ExtensionContext | undefined) {
+    async startIfStopped(log: (el : string) => void, context: vscode.ExtensionContext | undefined) {
         const pid = context?.workspaceState.get(key);
         const stopped = !pid || pid === none;
         const foreigner = await this.isUp();
-
+        log('start1 ' + pid + ', ' + foreigner + ', stopped ' + stopped);
         if (stopped && !foreigner) {
+            log('start2');
             await this.start(context);
+            log('start3');
         } else if (foreigner) {
+            log('start4');
             vscode.window.showWarningMessage(prefix + ' not started as already running.');
+            log('start6');
         } else {
+            log('start7');
             // Not UP but there is still a pid stored.
             // Likely because Codium or so exited without one using the stop command prior.
             await context?.workspaceState.update(key, none);
+            log('start8');
             await this.start(context);
+            log('start9');
         }
     }
 
@@ -177,7 +199,7 @@ export class TraceServer {
                     }
                     if (timeout) {
                         this.showError(prefix + ' startup timed-out after ' + millis + 'ms.');
-                        await this.stopOrReset(context);
+                        await this.stopOrReset(this.dummy, context);
                         break;
                     }
                 }
@@ -235,4 +257,8 @@ export class TraceServer {
             }
         });
     }
+    private dummy(el : string) {
+
+    }
+
 }
